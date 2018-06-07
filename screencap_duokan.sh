@@ -3,8 +3,8 @@
 #通过adb 左右翻页，同时截图到本地保存 
 #录入书名
 
-book_name='分析的力量'
-count=248
+book_name='工作前5年决定你的一生'
+count=213
 #点击向右翻页
 swap_right(){
 	adb shell input tap 1050 800
@@ -29,19 +29,38 @@ screenshot(){
 
 #png 导出 pdf
 export_pdf(){
-	cd  ./$book_name
-	for ((i=1; i<=$count; i ++))  
-	do  
-		a=65
-		out=$[((i/10))+$a]
-		t=`printf "%x" $out`  
-		as="\\x$t" 
-		outname=$as-$i
-		echo $outname
-		mv ./$i.png ./$outname.png
+	tar czvf png.tar.gz ./*.png
+	loop_count=$[count/200+1]
+
+	for ((i=1; i<=$loop_count; i ++))  
+		do  
+			echo $i
+			mkdir $i-dir
+			for (( j = 1; j <= $count; j++ )); do
+				if [ $j -le $[i*200] ]
+				then
+					a=65
+					out=$[((j/10))+$a]
+					t=`printf "%x" $out`  
+					as="\\x$t" 
+					outname=$as-$j
+					echo $outname
+					mv $j.png  $i-dir/$outname.png
+				fi
+			done
+			convert $i-dir/*.png  ./$book_name-$i.pdf	
 	done  
-	convert *.png $book_name.pdf	
 }
+
+#pdf 打包
+pack_pdf(){
+	tar czvf $book_name.tar.gz ./*.pdf
+}
+
+#清理png
+# clean_png(){
+# 	#ddd
+# }
 
 main(){
 	for ((i=1; i<=$count; i ++))  
@@ -50,7 +69,12 @@ main(){
 		swap_right
 		sleep 1
 	done  
-
-	export_pdf
 }
-main
+
+
+
+
+#main
+cd  ./$book_name
+#export_pdf
+pack_pdf
